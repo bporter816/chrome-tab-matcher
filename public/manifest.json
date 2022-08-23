@@ -3,12 +3,13 @@
     "description": "Automatically group your tabs!",
     "version": "1.0",
     "manifest_version": 3,
-    "options_page": "options.html",
+    "options_page": "src/pages/options/index.html",
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "src/pages/background/index.js",
+        "type": "module"
     },
     "action": {
-        "default_popup": "popup.html"
+        "default_popup": "src/pages/popup/index.html"
     },
     "permissions": [
         "storage",
