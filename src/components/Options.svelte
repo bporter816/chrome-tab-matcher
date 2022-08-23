@@ -76,18 +76,21 @@
 </script>
 
 <div>
-    <p>Rules are evaluated top-to-bottom, and the tab is grouped with the first matching rule.</p>
+    <p>
+        Rules are evaluated top-to-bottom, and the tab is grouped with the first matching rule.
+        You can drag and drop the rules to reorder them.
+    </p>
     <p>
         Tabs are grouped when a page loads or when you manually refresh the groupings. This means you can manually
         move tabs and they will not be automatically regrouped until one of these conditions is met.
     </p>
     <p>If a tab group with the given name does not exist, one will be created.</p>
-    <p>You can drag and drop the rules to reorder them.</p>
     <div bind:this={list}>
         {#each data.rules as rule, index (rule.id)}
         <div>
-            <p>{index + 1}:</p>
+            {index + 1}: match url regex
             <input bind:value={rule.matchStr} />
+            to tab group
             <input bind:value={rule.tabGroup} />
             <button on:click={() => deleteRule(index)}>Delete</button>
         </div>
