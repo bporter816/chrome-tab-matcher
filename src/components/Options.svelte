@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { onDestroy, onMount } from 'svelte';
-    import type { Rule, Data } from '../types';
+    import { onMount } from 'svelte';
+    import type { Data, Rule } from '../types';
     import { RuleType } from '../types';
     import { v4 as uuidv4 } from 'uuid';
     import Sortable from 'sortablejs';
@@ -22,22 +22,22 @@
                 animation: 150,
                 filter: "input",
                 preventOnFilter: false,
-                onUpdate: (evt) => {
+                onUpdate: (evt: Sortable.SortableEvent) => {
                     // sortable doesn't communicate the state update back to svelte, so we need to manually trigger
                     // a state update using assignment
-                    const el = data.rules.splice(evt.oldIndex, 1)[0];
+                    const el: Rule = data.rules.splice(evt.oldIndex, 1)[0];
                     data.rules.splice(evt.newIndex, 0, el);
                     data.rules = data.rules;
                 },
             }
         );
 
-        chrome.tabGroups.onCreated.addListener((tabGroup) => {
+        chrome.tabGroups.onCreated.addListener((tabGroup: chrome.tabGroups.TabGroup) => {
             console.log('Created tab group');
             tabGroups = [...tabGroups, tabGroup];
         });
 
-        chrome.tabGroups.onUpdated.addListener((tabGroup) => {
+        chrome.tabGroups.onUpdated.addListener((tabGroup: chrome.tabGroups.TabGroup) => {
             console.log('Updated tab group');
             for (let i = 0; i < tabGroups.length; i++) {
                 if (tabGroups[i].id === tabGroup.id) {
@@ -47,7 +47,7 @@
             }
         });
 
-        chrome.tabGroups.onRemoved.addListener((tabGroup) => {
+        chrome.tabGroups.onRemoved.addListener((tabGroup: chrome.tabGroups.TabGroup) => {
             console.log('Removed tab group');
             tabGroups = tabGroups.filter((el: chrome.tabGroups.TabGroup) => {
                 return el.title !== tabGroup.title;
@@ -56,7 +56,7 @@
     });
 
     function addRule() {
-        data.rules = [...data.rules, { id: uuidv4(), matchStr: '', type: RuleType.Url, tabGroup: '' }];
+        data.rules = [...data.rules, { id: uuidv4(), type: RuleType.Url, matchStr: '', tabGroup: '' }];
     }
 
     function deleteRule(index: number) {
