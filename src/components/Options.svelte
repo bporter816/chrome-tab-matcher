@@ -1,4 +1,7 @@
 <script lang="ts">
+    import Button from './Button.svelte';
+    import Input from './Input.svelte';
+    import IconInput from './IconInput.svelte';
     import { onMount } from 'svelte';
     import type { Data, Rule } from '../types';
     import { RuleType } from '../types';
@@ -21,6 +24,7 @@
             {
                 animation: 150,
                 filter: "input",
+                forceFallback: true,
                 preventOnFilter: false,
                 onUpdate: (evt: Sortable.SortableEvent) => {
                     // sortable doesn't communicate the state update back to svelte, so we need to manually trigger
@@ -50,7 +54,7 @@
         chrome.tabGroups.onRemoved.addListener((tabGroup: chrome.tabGroups.TabGroup) => {
             console.log('Removed tab group');
             tabGroups = tabGroups.filter((el: chrome.tabGroups.TabGroup) => {
-                return el.title !== tabGroup.title;
+                return el.id !== tabGroup.id;
             });
         });
     });
@@ -75,34 +79,48 @@
     }
 </script>
 
-<div>
-    <p>
+<div class="container mx-auto px-4">
+    <h1 class="text-2xl text-black dark:text-white mt-2">Rules</h1>
+    <p class="text-sm text-black dark:text-white py-1">
         Rules are evaluated top-to-bottom, and the tab is grouped with the first matching rule.
         You can drag and drop the rules to reorder them.
     </p>
-    <p>
+    <p class="text-sm text-black dark:text-white py-1">
         Tabs are grouped when a page loads or when you manually refresh the groupings. This means you can manually
         move tabs and they will not be automatically regrouped until one of these conditions is met.
     </p>
-    <p>If a tab group with the given name does not exist, one will be created.</p>
-    <div bind:this={list}>
-        {#each data.rules as rule, index (rule.id)}
-        <div>
-            {index + 1}: match url regex
-            <input bind:value={rule.matchStr} />
-            to tab group
-            <input bind:value={rule.tabGroup} />
-            <button on:click={() => deleteRule(index)}>Delete</button>
+    <p class="text-sm text-black dark:text-white py-1">If a tab group with the given name does not exist, one will be created.</p>
+    <div class="flex justify-center py-2">
+        <div class="px-2">
+            <Button on:click={addRule} label="Add rule">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </Button>
         </div>
-        {/each}
+        <div class="px-2">
+            <Button on:click={refresh} label="Refresh groupings">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12c0-1.232.046-2.453.138-3.662a4.006 4.006 0 013.7-3.7 48.678 48.678 0 017.324 0 4.006 4.006 0 013.7 3.7c.017.22.032.441.046.662M4.5 12l-3-3m3 3l3-3m12 3c0 1.232-.046 2.453-.138 3.662a4.006 4.006 0 01-3.7 3.7 48.657 48.657 0 01-7.324 0 4.006 4.006 0 01-3.7-3.7c-.017-.22-.032-.441-.046-.662M19.5 12l-3 3m3-3l3 3" />
+                </svg>
+            </Button>
+        </div>
     </div>
-    <hr />
-    <button on:click={addRule}>Add Rule</button>
-    <hr />
-    <button on:click={refresh}>Refresh Groupings</button>
-    <hr />
-    <pre><code>State:</code></pre>
-    <pre><code>{JSON.stringify(data.rules, null, 2)}</code></pre>
-    <pre><code>Tab Groups:</code></pre>
-    <pre><code>{JSON.stringify(tabGroups, null, 2)}</code></pre>
+    <div class="shadow-md overflow-hidden sm:rounded-md">
+        <ul bind:this={list} class="divide-y divide-gray-300 dark:divide-neutral-800">
+        {#each data.rules as rule, index (rule.id)}
+            <li class="py-4 px-4 flex items-center bg-pane dark:bg-pane-dark">
+                <div class="flex-none pr-3 text-sm text-black dark:text-white">{index + 1}: match url regex</div>
+                <div class="grow">
+                    <Input placeholder="regex" bind:value={rule.matchStr} />
+                </div>
+                <div class="flex-none px-3 text-sm text-black dark:text-white">to tab group</div>
+                <div class="grow">
+                    <IconInput placeholder="tab group" bind:value={rule.tabGroup} tabGroups={tabGroups} />
+                </div>
+                <button on:click={() => deleteRule(index)} class="flex-none pl-3 text-sm font-medium text-accent dark:text-accent-pale hover:text-accent-hover dark:hover:text-accent-palehover">Delete</button>
+            </li>
+        {/each}
+        </ul>
+    </div>
 </div>

@@ -1,5 +1,6 @@
 import Options from '../../components/Options.svelte';
 import type { Data } from '../../types';
+import './index.css';
 
 async function hydrate() {
     let data = await chrome.storage.sync.get({ rules: [] } as Data) as Data;

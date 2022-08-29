@@ -1,4 +1,6 @@
 <script lang="ts">
+    import Button from './Button.svelte';
+
     function refresh() {
         chrome.runtime.sendMessage({ type: 'refresh' });
     }
@@ -13,4 +15,5 @@
 <div>
     <button on:click={refresh}>Refresh Groupings</button>
     <button on:click={openOptions}>Settings</button>
+    <Button />
 </div>

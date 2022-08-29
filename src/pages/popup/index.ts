@@ -1,4 +1,5 @@
 import Popup from '../../components/Popup.svelte';
+import './index.css';
 
 function hydrate() {
     new Popup({
