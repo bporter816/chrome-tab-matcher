@@ -38,6 +38,9 @@ async function ungroupTab(tabId: number) {
 // process a tab according to the given rules
 async function handleTab(rules: Rule[], tab: chrome.tabs.Tab) {
     for (let i = 0; i < rules.length; i++) {
+        if (rules[i].matchStr === '' || rules[i].tabGroup === '') {
+            continue;
+        }
         switch (rules[i].type) {
             case RuleType.Url:
                 let re = new RegExp(rules[i].matchStr);
