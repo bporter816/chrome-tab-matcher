@@ -32,6 +32,6 @@
             <span class="bg-chrome{color} dark:bg-chrome{color}-pale h-4 w-4 rounded-full" aria-hidden="true"></span>
             {/if}
         </div>
-        <input type="input" bind:value class="form-input bg-input dark:bg-input-dark text-black dark:text-white shadow-sm focus:ring-chrome{classColor} focus:border-chrome{classColor} dark:focus:ring-chrome{classColor}-pale dark:focus:border-chrome{classColor}-pale block w-full pl-9 sm:text-sm border-gray-300 dark:border-neutral-800 rounded-md" placeholder={placeholder} />
+        <input type="input" bind:value class="nodrag form-input bg-input dark:bg-input-dark text-black dark:text-white shadow-sm focus:ring-chrome{classColor} focus:border-chrome{classColor} dark:focus:ring-chrome{classColor}-pale dark:focus:border-chrome{classColor}-pale block w-full pl-9 sm:text-sm border-gray-300 dark:border-neutral-800 rounded-md" placeholder={placeholder} />
     </div>
 </div>

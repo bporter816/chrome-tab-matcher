@@ -24,7 +24,7 @@
             list,
             {
                 animation: 150,
-                filter: "input",
+                filter: ".nodrag",
                 forceFallback: true,
                 preventOnFilter: false,
                 onUpdate: (evt: Sortable.SortableEvent) => {
