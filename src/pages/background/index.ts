@@ -41,10 +41,16 @@ async function handleTab(rules: Rule[], tab: chrome.tabs.Tab) {
         if (rules[i].matchStr === '' || rules[i].tabGroup === '') {
             continue;
         }
+        let re = new RegExp(rules[i].matchStr);
         switch (rules[i].type) {
-            case RuleType.Url:
-                let re = new RegExp(rules[i].matchStr);
+            case RuleType.TabUrl:
                 if (re.test(tab.url)) {
+                    await groupTab(tab.id, rules[i].tabGroup);
+                    return;
+                }
+                break;
+            case RuleType.TabTitle:
+                if (re.test(tab.title)) {
                     await groupTab(tab.id, rules[i].tabGroup);
                     return;
                 }

@@ -1,5 +1,6 @@
 export enum RuleType {
-    Url,
+    TabUrl,
+    TabTitle,
 }
 
 export type Rule = {

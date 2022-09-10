@@ -1,5 +1,6 @@
 <script lang="ts">
     import Button from './Button.svelte';
+    import Dropdown from './Dropdown.svelte';
     import Input from './Input.svelte';
     import IconInput from './IconInput.svelte';
     import { onMount } from 'svelte';
@@ -60,7 +61,7 @@
     });
 
     function addRule() {
-        data.rules = [...data.rules, { id: uuidv4(), type: RuleType.Url, matchStr: '', tabGroup: '' }];
+        data.rules = [...data.rules, { id: uuidv4(), type: RuleType.TabUrl, matchStr: '', tabGroup: '' }];
     }
 
     function deleteRule(index: number) {
@@ -110,12 +111,15 @@
         <ul bind:this={list} class="divide-y divide-gray-300 dark:divide-neutral-800">
         {#each data.rules as rule, index (rule.id)}
             <li class="py-4 px-4 flex items-center bg-pane dark:bg-pane-dark">
-                <div class="flex-none pr-3 text-sm text-black dark:text-white">{index + 1}: match url regex</div>
-                <div class="grow">
+                <div class="flex-none pr-1 text-sm text-black dark:text-white">{index + 1}: if</div>
+                <div class="grow px-1">
+                    <Dropdown options={[RuleType.TabUrl, RuleType.TabTitle]} bind:selected={rule.type} />
+                </div>
+                <div class="grow px-1">
                     <Input placeholder="regex" bind:value={rule.matchStr} />
                 </div>
-                <div class="flex-none px-3 text-sm text-black dark:text-white">to tab group</div>
-                <div class="grow">
+                <div class="flex-none px-1 text-sm text-black dark:text-white">add to</div>
+                <div class="grow px-1">
                     <IconInput placeholder="tab group" bind:value={rule.tabGroup} tabGroups={tabGroups} />
                 </div>
                 <button on:click={() => deleteRule(index)} class="flex-none pl-3 text-sm font-medium text-accent dark:text-accent-pale hover:text-accent-hover dark:hover:text-accent-palehover">Delete</button>
