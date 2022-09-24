@@ -35,8 +35,25 @@ async function ungroupTab(tabId: number) {
     await chrome.tabs.ungroup([tabId]);
 }
 
+async function inManagedGroup(tab: chrome.tabs.Tab, names: Set<string>) {
+    let group = await chrome.tabGroups.get(tab.groupId);
+    if (!group) {
+        return true;
+    }
+
+    return names.has(group.title);
+}
+
 // process a tab according to the given rules
-async function handleTab(rules: Rule[], tab: chrome.tabs.Tab) {
+async function handleTab(rules: Rule[], tab: chrome.tabs.Tab, names: Set<string>) {
+    // ignore tab if it's in a user-defined group
+    if (tab.groupId > 0) {
+        let managed = await inManagedGroup(tab, names);
+        if (!managed) {
+            return;
+        }
+    }
+
     for (let i = 0; i < rules.length; i++) {
         if (rules[i].matchStr === '' || rules[i].tabGroup === '') {
             continue;
@@ -74,9 +91,11 @@ async function refresh() {
         return;
     }
 
+    let names = new Set<string>(data.rules.map((o: Rule) => o.tabGroup));
+
     for (let i = 0; i < tabs.length; i++) {
         // block so that if multiple tabs need to be added to a new group we ensure the new group exists
-        await handleTab(data.rules, tabs[i]);
+        await handleTab(data.rules, tabs[i], names);
     }
 }
 
@@ -95,6 +114,30 @@ chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, tab) => {
             return;
         }
 
-        handleTab(data.rules, tab);
+        let names = new Set<string>(data.rules.map((o: Rule) => o.tabGroup));
+
+        handleTab(data.rules, tab, names);
     }
+});
+
+// listen for changes to tab groups and send the new state back to the component
+async function sendGroups() {
+    let groups = await chrome.tabGroups.query({});
+    if (!groups) {
+        return;
+    }
+
+    chrome.runtime.sendMessage({ type: 'updateGroups', tabGroups: groups });
+}
+
+chrome.tabGroups.onCreated.addListener((_tabGroup: chrome.tabGroups.TabGroup) => {
+    sendGroups();
+});
+
+chrome.tabGroups.onUpdated.addListener((_tabGroup: chrome.tabGroups.TabGroup) => {
+    sendGroups();
+});
+
+chrome.tabGroups.onRemoved.addListener((_tabGroup: chrome.tabGroups.TabGroup) => {
+    sendGroups();
 });

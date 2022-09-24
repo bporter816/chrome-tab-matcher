@@ -37,26 +37,10 @@
             }
         );
 
-        chrome.tabGroups.onCreated.addListener((tabGroup: chrome.tabGroups.TabGroup) => {
-            console.log('Created tab group');
-            tabGroups = [...tabGroups, tabGroup];
-        });
-
-        chrome.tabGroups.onUpdated.addListener((tabGroup: chrome.tabGroups.TabGroup) => {
-            console.log('Updated tab group');
-            for (let i = 0; i < tabGroups.length; i++) {
-                if (tabGroups[i].id === tabGroup.id) {
-                    tabGroups[i] = tabGroup;
-                    return;
-                }
+        chrome.runtime.onMessage.addListener((request, _send, _sendResponse) => {
+            if (request.type === 'updateGroups') {
+                tabGroups = request.tabGroups;
             }
-        });
-
-        chrome.tabGroups.onRemoved.addListener((tabGroup: chrome.tabGroups.TabGroup) => {
-            console.log('Removed tab group');
-            tabGroups = tabGroups.filter((el: chrome.tabGroups.TabGroup) => {
-                return el.id !== tabGroup.id;
-            });
         });
     });
 
