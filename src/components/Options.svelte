@@ -74,6 +74,9 @@
         Tabs are grouped when a page loads or when you manually refresh the groupings. This means you can manually
         move tabs and they will not be automatically regrouped until one of these conditions is met.
     </p>
+    <p class="text-sm text-black dark:text-white py-1">
+        Tabs that have been manually grouped with a group name not found in any rules will not be moved.
+    </p>
     <p class="text-sm text-black dark:text-white py-1">If a tab group with the given name does not exist, one will be created.</p>
     <div class="flex justify-center py-2">
         <div class="px-2">
