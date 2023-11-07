@@ -28,6 +28,18 @@ async function groupTab(tabId: number, tabGroupName: string) {
             return;
         }
     }
+    let tab = await chrome.tabs.update(tabId, {highlighted: true});
+    if (!tab) {
+        return;
+    }
+    let tabDetails = await chrome.tabs.get(tabId);
+    if (!tabDetails) {
+        return;
+    }
+    let windowUpdate = await chrome.windows.update(tabDetails.windowId, {focused: true});
+    if (!windowUpdate) {
+        return;
+    }
 }
 
 // ungroup a tab
