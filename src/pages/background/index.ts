@@ -6,45 +6,52 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 // move a tab to the tab group with the given name
-async function groupTab(tabId: number, tabGroupName: string) {
+async function groupTab(tab: chrome.tabs.Tab, tabGroupName: string) {
     let tabGroups = await chrome.tabGroups.query({title: tabGroupName});
     if (!tabGroups) {
         return;
     }
 
     if (tabGroups.length == 0) {
-        let groupId = await chrome.tabs.group({tabIds: [tabId]});
+        // group doesn't exist, create it
+        let groupId = await chrome.tabs.group({tabIds: [tab.id]});
         if (!groupId) {
             return;
         }
 
+        // name the new group
         let group = await chrome.tabGroups.update(groupId, {title: tabGroupName});
         if (!group) {
             return;
         }
     } else {
-        let groupId = await chrome.tabs.group({groupId: tabGroups[0].id, tabIds: [tabId]});
+        // group already exists
+        let groupId = await chrome.tabs.group({groupId: tabGroups[0].id, tabIds: [tab.id]});
         if (!groupId) {
             return;
         }
-    }
-    let tab = await chrome.tabs.update(tabId, {highlighted: true});
-    if (!tab) {
-        return;
-    }
-    let tabDetails = await chrome.tabs.get(tabId);
-    if (!tabDetails) {
-        return;
-    }
-    let windowUpdate = await chrome.windows.update(tabDetails.windowId, {focused: true});
-    if (!windowUpdate) {
-        return;
+
+        // refocus on the tab after it's been moved, if it was actually moved
+        if (tab.groupId !== groupId) {
+            let highlightedTab = await chrome.tabs.update(tab.id, {highlighted: true});
+            if (!highlightedTab) {
+                return;
+            }
+            let tabDetails = await chrome.tabs.get(highlightedTab.id);
+            if (!tabDetails) {
+                return;
+            }
+            let windowUpdate = await chrome.windows.update(tabDetails.windowId, {focused: true});
+            if (!windowUpdate) {
+                return;
+            }
+        }
     }
 }
 
 // ungroup a tab
-async function ungroupTab(tabId: number) {
-    await chrome.tabs.ungroup([tabId]);
+async function ungroupTab(tab: chrome.tabs.Tab) {
+    await chrome.tabs.ungroup([tab.id]);
 }
 
 async function inManagedGroup(tab: chrome.tabs.Tab, names: Set<string>) {
@@ -70,17 +77,17 @@ async function handleTab(rules: Rule[], tab: chrome.tabs.Tab, names: Set<string>
         if (rules[i].matchStr === '' || rules[i].tabGroup === '') {
             continue;
         }
-        let re = new RegExp(rules[i].matchStr);
+        let re = new RegExp(rules[i].matchStr, 'i');
         switch (rules[i].type) {
             case RuleType.TabUrl:
                 if (re.test(tab.url)) {
-                    await groupTab(tab.id, rules[i].tabGroup);
+                    await groupTab(tab, rules[i].tabGroup);
                     return;
                 }
                 break;
             case RuleType.TabTitle:
                 if (re.test(tab.title)) {
-                    await groupTab(tab.id, rules[i].tabGroup);
+                    await groupTab(tab, rules[i].tabGroup);
                     return;
                 }
                 break;
@@ -88,7 +95,7 @@ async function handleTab(rules: Rule[], tab: chrome.tabs.Tab, names: Set<string>
                 console.log('Error: unknown rule type');
         }
     }
-    await ungroupTab(tab.id);
+    await ungroupTab(tab);
 }
 
 // re-process all tabs
