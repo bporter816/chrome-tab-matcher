@@ -15,7 +15,7 @@ async function groupTab(tab: chrome.tabs.Tab, tabGroupName: string) {
     const tabGroups = await chrome.tabGroups.query({ title: tabGroupName });
 
     let groupId: number;
-    if (tabGroups.length == 0) {
+    if (tabGroups.length === 0) {
         // group doesn't exist, create it
         groupId = await chrome.tabs.group({ tabIds: [tabId] });
         await chrome.tabGroups.update(groupId, { title: tabGroupName });
