@@ -4,21 +4,19 @@ import "./index.css";
 import { mount } from "svelte";
 
 async function hydrate() {
-    let data = (await chrome.storage.sync.get({ rules: [] } as Data)) as Data;
-    if (!data) {
-        return;
-    }
+    const data = (await chrome.storage.sync.get({ rules: [] } as Data)) as Data;
+    const tabGroups = await chrome.tabGroups.query({});
 
-    let tabGroups = await chrome.tabGroups.query({});
-    if (!tabGroups) {
-        return;
+    const target = document.getElementById("app");
+    if (!target) {
+        throw new Error("#app element not found");
     }
 
     mount(Options, {
-        target: document.getElementById("app"),
+        target,
         props: {
-            data: data,
-            tabGroups: tabGroups,
+            data,
+            tabGroups,
         },
     });
 }

@@ -1,4 +1,4 @@
-import type { Rule } from "../../types";
+import type { Data, Rule } from "../../types";
 import { RuleType } from "../../types";
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -7,72 +7,45 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // move a tab to the tab group with the given name
 async function groupTab(tab: chrome.tabs.Tab, tabGroupName: string) {
-    let tabGroups = await chrome.tabGroups.query({ title: tabGroupName });
-    if (!tabGroups) {
+    if (tab.id === undefined) {
         return;
     }
+    const tabId = tab.id;
 
+    const tabGroups = await chrome.tabGroups.query({ title: tabGroupName });
+
+    let groupId: number;
     if (tabGroups.length == 0) {
         // group doesn't exist, create it
-        let groupId = await chrome.tabs.group({ tabIds: [tab.id] });
-        if (!groupId) {
-            return;
-        }
-
-        // name the new group
-        let group = await chrome.tabGroups.update(groupId, {
-            title: tabGroupName,
-        });
-        if (!group) {
-            return;
-        }
+        groupId = await chrome.tabs.group({ tabIds: [tabId] });
+        await chrome.tabGroups.update(groupId, { title: tabGroupName });
     } else {
         // group already exists
-        let groupId = await chrome.tabs.group({
+        groupId = await chrome.tabs.group({
             groupId: tabGroups[0].id,
-            tabIds: [tab.id],
+            tabIds: [tabId],
         });
-        if (!groupId) {
-            return;
-        }
+    }
 
-        // refocus on the tab after it's been moved, if it was actually moved
-        if (tab.groupId !== groupId) {
-            let highlightedTab = await chrome.tabs.update(tab.id, {
-                highlighted: true,
-            });
-            if (!highlightedTab) {
-                return;
-            }
-            let tabDetails = await chrome.tabs.get(highlightedTab.id);
-            if (!tabDetails) {
-                return;
-            }
-            let windowUpdate = await chrome.windows.update(
-                tabDetails.windowId,
-                {
-                    focused: true,
-                },
-            );
-            if (!windowUpdate) {
-                return;
-            }
-        }
+    // refocus on the tab after it's been moved, if it was actually moved
+    if (tab.groupId !== groupId) {
+        await chrome.tabs.update(tabId, { highlighted: true });
+        const tabDetails = await chrome.tabs.get(tabId);
+        await chrome.windows.update(tabDetails.windowId, { focused: true });
     }
 }
 
 // ungroup a tab
 async function ungroupTab(tab: chrome.tabs.Tab) {
-    await chrome.tabs.ungroup([tab.id]);
+    if (tab.id === undefined) {
+        return;
+    }
+    await chrome.tabs.ungroup(tab.id);
 }
 
 async function inManagedGroup(tab: chrome.tabs.Tab, names: Set<string>) {
-    let group = await chrome.tabGroups.get(tab.groupId);
-    if (!group) {
-        return true;
-    }
-
-    return names.has(group.title);
+    const group = await chrome.tabGroups.get(tab.groupId);
+    return group.title !== undefined && names.has(group.title);
 }
 
 // process a tab according to the given rules
@@ -83,7 +56,7 @@ async function handleTab(
 ) {
     // ignore tab if it's in a user-defined group
     if (tab.groupId > 0) {
-        let managed = await inManagedGroup(tab, names);
+        const managed = await inManagedGroup(tab, names);
         if (!managed) {
             return;
         }
@@ -93,16 +66,16 @@ async function handleTab(
         if (rules[i].matchStr === "" || rules[i].tabGroup === "") {
             continue;
         }
-        let re = new RegExp(rules[i].matchStr, "i");
+        const re = new RegExp(rules[i].matchStr, "i");
         switch (rules[i].type) {
             case RuleType.TabUrl:
-                if (re.test(tab.url)) {
+                if (tab.url !== undefined && re.test(tab.url)) {
                     await groupTab(tab, rules[i].tabGroup);
                     return;
                 }
                 break;
             case RuleType.TabTitle:
-                if (re.test(tab.title)) {
+                if (tab.title !== undefined && re.test(tab.title)) {
                     await groupTab(tab, rules[i].tabGroup);
                     return;
                 }
@@ -114,23 +87,21 @@ async function handleTab(
     await ungroupTab(tab);
 }
 
+// load the current rules and the set of tab group names they reference
+async function loadRulesAndNames() {
+    const data = (await chrome.storage.sync.get({ rules: [] } as Data)) as Data;
+    const names = new Set<string>(data.rules.map((o: Rule) => o.tabGroup));
+    return { rules: data.rules, names };
+}
+
 // re-process all tabs
 async function refresh() {
-    let tabs = await chrome.tabs.query({});
-    if (!tabs) {
-        return;
-    }
+    const tabs = await chrome.tabs.query({});
+    const { rules, names } = await loadRulesAndNames();
 
-    let data = await chrome.storage.sync.get({ rules: [] });
-    if (!data) {
-        return;
-    }
-
-    let names = new Set<string>(data.rules.map((o: Rule) => o.tabGroup));
-
-    for (let i = 0; i < tabs.length; i++) {
+    for (const tab of tabs) {
         // block so that if multiple tabs need to be added to a new group we ensure the new group exists
-        await handleTab(data.rules, tabs[i], names);
+        await handleTab(rules, tab, names);
     }
 }
 
@@ -144,24 +115,14 @@ chrome.runtime.onMessage.addListener((request, _send, _sendResponse) => {
 // group pages when they finish loading
 chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, tab) => {
     if (changeInfo.status === "complete") {
-        let data = await chrome.storage.sync.get({ rules: [] });
-        if (!data) {
-            return;
-        }
-
-        let names = new Set<string>(data.rules.map((o: Rule) => o.tabGroup));
-
-        handleTab(data.rules, tab, names);
+        const { rules, names } = await loadRulesAndNames();
+        handleTab(rules, tab, names);
     }
 });
 
 // listen for changes to tab groups and send the new state back to the component
 async function sendGroups() {
-    let groups = await chrome.tabGroups.query({});
-    if (!groups) {
-        return;
-    }
-
+    const groups = await chrome.tabGroups.query({});
     chrome.runtime.sendMessage({ type: "updateGroups", tabGroups: groups });
 }
 

@@ -24,6 +24,9 @@ function sortableList(node: HTMLElement) {
         forceFallback: true,
         preventOnFilter: false,
         onUpdate: (evt: Sortable.SortableEvent) => {
+            if (evt.oldIndex === undefined || evt.newIndex === undefined) {
+                return;
+            }
             const el: Rule = data.rules.splice(evt.oldIndex, 1)[0];
             data.rules.splice(evt.newIndex, 0, el);
         },
