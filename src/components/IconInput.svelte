@@ -1,10 +1,11 @@
 <script lang="ts">
-    export let placeholder: string;
-    export let value: string;
-    export let tabGroups: chrome.tabGroups.TabGroup[];
+    interface Props {
+        placeholder: string;
+        value: string;
+        tabGroups: chrome.tabGroups.TabGroup[];
+    }
 
-    let color: chrome.tabGroups.ColorEnum | null;
-    let classColor: chrome.tabGroups.ColorEnum;
+    let { placeholder, value = $bindable(), tabGroups }: Props = $props();
 
     function updateColor(tabGroups: chrome.tabGroups.TabGroup[], value: string) {
         for (let i = 0; i < tabGroups.length; i++) {
@@ -15,10 +16,8 @@
         return null;
     }
 
-    $: {
-        color = updateColor(tabGroups, value);
-        classColor = color === null ? 'grey' : color;
-    }
+    let color: chrome.tabGroups.ColorEnum | null = $derived(updateColor(tabGroups, value));
+    let classColor: chrome.tabGroups.ColorEnum | 'grey' = $derived(color === null ? 'grey' : color);
 </script>
 
 <div>

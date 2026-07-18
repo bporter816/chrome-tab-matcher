@@ -1,7 +1,11 @@
 <script lang="ts">
     import { RuleType } from '../types';
-    export let options: RuleType[];
-    export let selected: RuleType;
+    interface Props {
+        options: RuleType[];
+        selected: RuleType;
+    }
+
+    let { options, selected = $bindable() }: Props = $props();
 
     const mapping = {
         [RuleType.TabUrl]: 'URL matches',

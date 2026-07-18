@@ -1,6 +1,10 @@
 <script lang="ts">
-    export let placeholder: string;
-    export let value: string;
+    interface Props {
+        placeholder: string;
+        value: string;
+    }
+
+    let { placeholder, value = $bindable() }: Props = $props();
 </script>
 
 <div>
