@@ -8,8 +8,8 @@ export type Rule = {
     type: RuleType;
     matchStr: string;
     tabGroup: string;
-}
+};
 
 export type Data = {
     rules: Rule[];
-}
+};

@@ -1,10 +1,10 @@
 <script lang="ts">
-    interface Props {
-        placeholder: string;
-        value: string;
-    }
+interface Props {
+    placeholder: string;
+    value: string;
+}
 
-    let { placeholder, value = $bindable() }: Props = $props();
+let { placeholder, value = $bindable() }: Props = $props();
 </script>
 
 <div>

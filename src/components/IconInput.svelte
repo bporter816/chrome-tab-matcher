@@ -1,23 +1,27 @@
 <script lang="ts">
-    interface Props {
-        placeholder: string;
-        value: string;
-        tabGroups: chrome.tabGroups.TabGroup[];
-    }
+interface Props {
+    placeholder: string;
+    value: string;
+    tabGroups: chrome.tabGroups.TabGroup[];
+}
 
-    let { placeholder, value = $bindable(), tabGroups }: Props = $props();
+let { placeholder, value = $bindable(), tabGroups }: Props = $props();
 
-    function updateColor(tabGroups: chrome.tabGroups.TabGroup[], value: string) {
-        for (let i = 0; i < tabGroups.length; i++) {
-            if (value === tabGroups[i].title) {
-                return tabGroups[i].color;
-            }
+function updateColor(tabGroups: chrome.tabGroups.TabGroup[], value: string) {
+    for (let i = 0; i < tabGroups.length; i++) {
+        if (value === tabGroups[i].title) {
+            return tabGroups[i].color;
         }
-        return null;
     }
+    return null;
+}
 
-    let color: chrome.tabGroups.ColorEnum | null = $derived(updateColor(tabGroups, value));
-    let classColor: chrome.tabGroups.ColorEnum | 'grey' = $derived(color === null ? 'grey' : color);
+let color: chrome.tabGroups.ColorEnum | null = $derived(
+    updateColor(tabGroups, value),
+);
+let classColor: chrome.tabGroups.ColorEnum | "grey" = $derived(
+    color === null ? "grey" : color,
+);
 </script>
 
 <div>

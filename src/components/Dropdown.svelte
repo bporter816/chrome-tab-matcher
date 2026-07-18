@@ -1,16 +1,16 @@
 <script lang="ts">
-    import { RuleType } from '../types';
-    interface Props {
-        options: RuleType[];
-        selected: RuleType;
-    }
+import { RuleType } from "../types";
+interface Props {
+    options: RuleType[];
+    selected: RuleType;
+}
 
-    let { options, selected = $bindable() }: Props = $props();
+let { options, selected = $bindable() }: Props = $props();
 
-    const mapping = {
-        [RuleType.TabUrl]: 'URL matches',
-        [RuleType.TabTitle]: 'title matches',
-    };
+const mapping = {
+    [RuleType.TabUrl]: "URL matches",
+    [RuleType.TabTitle]: "title matches",
+};
 </script>
 <div>
     <select bind:value={selected} class="nodrag form-select block w-full rounded-md bg-input dark:bg-input-dark text-black dark:text-white shadow-sm focus:ring-accent dark:focus:ring-accent-pale focus:border-accent dark:focus:border-accent-pale border-gray-300 dark:border-neutral-800 sm:text-sm">

@@ -1,71 +1,70 @@
 <script lang="ts">
-    import Button from './Button.svelte';
-    import Dropdown from './Dropdown.svelte';
-    import Input from './Input.svelte';
-    import IconInput from './IconInput.svelte';
-    import { onMount } from 'svelte';
-    import type { Data, Rule } from '../types';
-    import { RuleType } from '../types';
-    import { v4 as uuidv4 } from 'uuid';
-    import Sortable from 'sortablejs';
+import Button from "./Button.svelte";
+import Dropdown from "./Dropdown.svelte";
+import Input from "./Input.svelte";
+import IconInput from "./IconInput.svelte";
+import { onMount } from "svelte";
+import type { Data, Rule } from "../types";
+import { RuleType } from "../types";
+import { v4 as uuidv4 } from "uuid";
+import Sortable from "sortablejs";
 
-    interface Props {
-        data: Data;
-        tabGroups: chrome.tabGroups.TabGroup[];
-    }
+interface Props {
+    data: Data;
+    tabGroups: chrome.tabGroups.TabGroup[];
+}
 
-    let { data, tabGroups }: Props = $props();
+let { data, tabGroups }: Props = $props();
 
-    let list: HTMLElement = $state();
+let list: HTMLElement = $state();
 
-
-    onMount(async () => {
-        Sortable.create(
-            list,
-            {
-                animation: 150,
-                filter: ".nodrag",
-                forceFallback: true,
-                preventOnFilter: false,
-                onUpdate: (evt: Sortable.SortableEvent) => {
-                    // sortable doesn't communicate the state update back to svelte, so we need to manually trigger
-                    // a state update using assignment
-                    const el: Rule = data.rules.splice(evt.oldIndex, 1)[0];
-                    data.rules.splice(evt.newIndex, 0, el);
-                    data.rules = data.rules;
-                },
-            }
-        );
-
-        chrome.runtime.onMessage.addListener((request, _send, _sendResponse) => {
-            if (request.type === 'updateGroups') {
-                tabGroups = request.tabGroups;
-            }
-        });
+onMount(async () => {
+    Sortable.create(list, {
+        animation: 150,
+        filter: ".nodrag",
+        forceFallback: true,
+        preventOnFilter: false,
+        onUpdate: (evt: Sortable.SortableEvent) => {
+            // sortable doesn't communicate the state update back to svelte, so we need to manually trigger
+            // a state update using assignment
+            const el: Rule = data.rules.splice(evt.oldIndex, 1)[0];
+            data.rules.splice(evt.newIndex, 0, el);
+            data.rules = data.rules;
+        },
     });
 
-    function addRule() {
-        data.rules = [...data.rules, { id: uuidv4(), type: RuleType.TabUrl, matchStr: '', tabGroup: '' }];
-    }
-
-    function deleteRule(index: number) {
-        data.rules.splice(index, 1);
-        data.rules = data.rules;
-    }
-
-    function save(d: Data) {
-        chrome.storage.sync.set(d, () => {
-            console.log('Saved options');
-        });
-    }
-
-    function refresh() {
-        chrome.runtime.sendMessage({ type: 'refresh' });
-    }
-    // save the data to chrome storage whenever it changes
-    $effect(() => {
-        save(data);
+    chrome.runtime.onMessage.addListener((request, _send, _sendResponse) => {
+        if (request.type === "updateGroups") {
+            tabGroups = request.tabGroups;
+        }
     });
+});
+
+function addRule() {
+    data.rules = [
+        ...data.rules,
+        { id: uuidv4(), type: RuleType.TabUrl, matchStr: "", tabGroup: "" },
+    ];
+}
+
+function deleteRule(index: number) {
+    data.rules.splice(index, 1);
+    data.rules = data.rules;
+}
+
+function save(d: Data) {
+    chrome.storage.sync.set(d, () => {
+        console.log("Saved options");
+    });
+}
+
+function refresh() {
+    chrome.runtime.sendMessage({ type: "refresh" });
+}
+// save the data to chrome storage whenever it changes
+$effect(() => {
+    save(data);
+});
 </script>
 
 <div class="container mx-auto px-4">

@@ -1,11 +1,11 @@
-import Popup from '../../components/Popup.svelte';
-import './index.css';
+import Popup from "../../components/Popup.svelte";
+import "./index.css";
 import { mount } from "svelte";
 
 function hydrate() {
     mount(Popup, {
-            target: document.getElementById('app')
-        });
+        target: document.getElementById("app"),
+    });
 }
 
-document.addEventListener('DOMContentLoaded', hydrate);
+document.addEventListener("DOMContentLoaded", hydrate);

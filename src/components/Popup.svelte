@@ -1,15 +1,15 @@
 <script lang="ts">
-    import Button from './Button.svelte';
+import Button from "./Button.svelte";
 
-    function refresh() {
-        chrome.runtime.sendMessage({ type: 'refresh' });
-    }
+function refresh() {
+    chrome.runtime.sendMessage({ type: "refresh" });
+}
 
-    function openOptions() {
-        chrome.runtime.openOptionsPage(() => {
-            console.log("Opened options page");
-        });
-    }
+function openOptions() {
+    chrome.runtime.openOptionsPage(() => {
+        console.log("Opened options page");
+    });
+}
 </script>
 
 <div class="flex justify-center py-2">
