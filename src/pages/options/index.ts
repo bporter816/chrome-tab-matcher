@@ -23,4 +23,4 @@ async function hydrate() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", hydrate);
+hydrate();
