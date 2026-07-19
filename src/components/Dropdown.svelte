@@ -1,5 +1,6 @@
 <script lang="ts">
 import { RuleType } from "../types";
+
 interface Props {
     options: RuleType[];
     selected: RuleType;

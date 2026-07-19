@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @plugin "@tailwindcss/forms" {
-  strategy: "class";
+    strategy: "class";
 }
 
 /*
@@ -11,49 +11,49 @@
 @source inline("{dark:,focus:,dark:focus:,}{border,bg,ring,text}-chrome{grey,blue,red,yellow,green,pink,purple,cyan,orange}{,-pale}");
 
 @theme {
-  --color-accent: #1a73e8;
-  --color-accent-hover: #3081ea;
-  --color-accent-pale: #8ab4f8;
-  --color-accent-palehover: #7fa6e5;
+    --color-accent: #1a73e8;
+    --color-accent-hover: #3081ea;
+    --color-accent-pale: #8ab4f8;
+    --color-accent-palehover: #7fa6e5;
 
-  --color-background: #ffffff;
-  --color-background-dark: #202124;
+    --color-background: #ffffff;
+    --color-background-dark: #202124;
 
-  --color-input: #f1f3f4;
-  --color-input-dark: #202124;
+    --color-input: #f1f3f4;
+    --color-input-dark: #202124;
 
-  --color-pane: #f8f9fa;
-  --color-pane-dark: #292a2d;
+    --color-pane: #f8f9fa;
+    --color-pane-dark: #292a2d;
 
-  --color-chromegrey: #5f6368;
-  --color-chromegrey-pale: #dadce0;
+    --color-chromegrey: #5f6368;
+    --color-chromegrey-pale: #dadce0;
 
-  --color-chromeblue: #1a73e8;
-  --color-chromeblue-pale: #8ab4f8;
+    --color-chromeblue: #1a73e8;
+    --color-chromeblue-pale: #8ab4f8;
 
-  --color-chromered: #d93025;
-  --color-chromered-pale: #f28b82;
+    --color-chromered: #d93025;
+    --color-chromered-pale: #f28b82;
 
-  --color-chromeyellow: #f9ab00;
-  --color-chromeyellow-pale: #fdd663;
+    --color-chromeyellow: #f9ab00;
+    --color-chromeyellow-pale: #fdd663;
 
-  --color-chromegreen: #188038;
-  --color-chromegreen-pale: #81c995;
+    --color-chromegreen: #188038;
+    --color-chromegreen-pale: #81c995;
 
-  --color-chromepink: #d01884;
-  --color-chromepink-pale: #ff8bcb;
+    --color-chromepink: #d01884;
+    --color-chromepink-pale: #ff8bcb;
 
-  --color-chromepurple: #a142f4;
-  --color-chromepurple-pale: #c58af9;
+    --color-chromepurple: #a142f4;
+    --color-chromepurple-pale: #c58af9;
 
-  --color-chromecyan: #007b83;
-  --color-chromecyan-pale: #78d9ec;
+    --color-chromecyan: #007b83;
+    --color-chromecyan-pale: #78d9ec;
 
-  --color-chromeorange: #fa903e;
-  --color-chromeorange-pale: #fcad70;
+    --color-chromeorange: #fa903e;
+    --color-chromeorange-pale: #fcad70;
 
-  --breakpoint-xl: 1024px;
-  --breakpoint-2xl: 1024px;
+    --breakpoint-xl: 1024px;
+    --breakpoint-2xl: 1024px;
 }
 
 /*
@@ -65,11 +65,11 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
+    }
 }
