@@ -16,10 +16,10 @@ function updateColor(tabGroups: chrome.tabGroups.TabGroup[], value: string) {
     return null;
 }
 
-let color: chrome.tabGroups.ColorEnum | null = $derived(
+let color: `${chrome.tabGroups.Color}` | null = $derived(
     updateColor(tabGroups, value),
 );
-let classColor: chrome.tabGroups.ColorEnum | "grey" = $derived(
+let classColor: `${chrome.tabGroups.Color}` = $derived(
     color === null ? "grey" : color,
 );
 </script>
