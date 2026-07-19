@@ -5,7 +5,6 @@ import Input from "./Input.svelte";
 import IconInput from "./IconInput.svelte";
 import type { Data, Rule } from "../types";
 import { RuleType } from "../types";
-import { v4 as uuidv4 } from "uuid";
 import Sortable from "sortablejs";
 
 interface Props {
@@ -46,7 +45,7 @@ chrome.runtime.onMessage.addListener((request, _send, _sendResponse) => {
 });
 
 function addRule() {
-    data.rules.push({ id: uuidv4(), type: RuleType.TabUrl, matchStr: "", tabGroup: "" });
+    data.rules.push({ id: crypto.randomUUID(), type: RuleType.TabUrl, matchStr: "", tabGroup: "" });
 }
 
 function deleteRule(index: number) {
