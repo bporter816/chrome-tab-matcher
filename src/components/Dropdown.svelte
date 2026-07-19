@@ -11,6 +11,7 @@ let { options, selected = $bindable() }: Props = $props();
 const mapping = {
     [RuleType.TabUrl]: "URL matches",
     [RuleType.TabTitle]: "title matches",
+    [RuleType.PageBody]: "page content matches",
 };
 </script>
 <div>

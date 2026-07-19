@@ -84,6 +84,10 @@ $effect(() => {
         Tabs that have been manually grouped with a group name not found in any rules will not be moved.
     </p>
     <p class="text-sm text-black dark:text-white py-1">If a tab group with the given name does not exist, one will be created.</p>
+    <p class="text-sm text-black dark:text-white py-1">
+        "page content matches" rules check the page's visible text as of when it finished loading, so text added
+        afterward (e.g. by client-side JavaScript) may not be seen until the page is refreshed or reloaded.
+    </p>
     <div class="flex justify-center py-2">
         <div class="px-2">
             <Button onclick={addRule} label="Add rule">
@@ -106,7 +110,7 @@ $effect(() => {
             <li class="py-4 px-4 flex items-center bg-pane dark:bg-pane-dark">
                 <div class="flex-none pr-1 text-sm text-black dark:text-white">{index + 1}: if</div>
                 <div class="grow px-1">
-                    <Dropdown options={[RuleType.TabUrl, RuleType.TabTitle]} bind:selected={rule.type} />
+                    <Dropdown options={[RuleType.TabUrl, RuleType.TabTitle, RuleType.PageBody]} bind:selected={rule.type} />
                 </div>
                 <div class="grow px-1">
                     <Input placeholder="regex" bind:value={rule.matchStr} />

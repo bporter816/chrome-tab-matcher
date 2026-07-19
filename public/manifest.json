@@ -17,5 +17,6 @@
     "action": {
         "default_popup": "src/pages/popup/index.html"
     },
-    "permissions": ["storage", "tabs", "tabGroups"]
+    "permissions": ["storage", "tabs", "tabGroups", "scripting"],
+    "host_permissions": ["<all_urls>"]
 }

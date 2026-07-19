@@ -48,6 +48,26 @@ async function inManagedGroup(tab: chrome.tabs.Tab, names: Set<string>) {
     return group.title !== undefined && names.has(group.title);
 }
 
+// grab the visible text of a tab's page, if possible
+async function getPageText(tab: chrome.tabs.Tab): Promise<string | undefined> {
+    if (tab.id === undefined) {
+        return undefined;
+    }
+    try {
+        const results = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: () => document.body.textContent,
+        });
+        const text = results[0]?.result;
+        // collapse layout/source-formatting whitespace so text split across
+        // elements matches as one line
+        return text?.replace(/\s+/g, " ").trim();
+    } catch {
+        // page can't be scripted (e.g. chrome:// pages, the Chrome Web Store)
+        return undefined;
+    }
+}
+
 // process a tab according to the given rules
 async function handleTab(
     rules: Rule[],
@@ -61,6 +81,9 @@ async function handleTab(
             return;
         }
     }
+
+    let pageText: string | undefined;
+    let pageTextFetched = false;
 
     for (let i = 0; i < rules.length; i++) {
         if (rules[i].matchStr === "" || rules[i].tabGroup === "") {
@@ -80,6 +103,16 @@ async function handleTab(
                     return;
                 }
                 break;
+            case RuleType.PageBody:
+                if (!pageTextFetched) {
+                    pageText = await getPageText(tab);
+                    pageTextFetched = true;
+                }
+                if (pageText !== undefined && re.test(pageText)) {
+                    await groupTab(tab, rules[i].tabGroup);
+                    return;
+                }
+                break;
             default:
                 console.log("Error: unknown rule type");
         }
@@ -89,7 +122,7 @@ async function handleTab(
 
 // load the current rules and the set of tab group names they reference
 async function loadRulesAndNames() {
-    const data = (await chrome.storage.sync.get({ rules: [] } as Data)) as Data;
+    const data = (await chrome.storage.sync.get({ rules: [] })) as Data;
     const names = new Set<string>(data.rules.map((o: Rule) => o.tabGroup));
     return { rules: data.rules, names };
 }
