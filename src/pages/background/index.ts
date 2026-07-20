@@ -1,4 +1,4 @@
-import type { Data, Rule } from "../../types";
+import type { ConsolidateRule, Data, Rule } from "../../types";
 import { RuleType } from "../../types";
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -150,6 +150,78 @@ chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, tab) => {
     if (changeInfo.status === "complete") {
         const { rules, names } = await loadRulesAndNames();
         handleTab(rules, tab, names);
+    }
+});
+
+// canonicalize a URL for duplicate detection: the first consolidation rule whose
+// matchStr matches is applied via replaceStr (which may reference capture groups,
+// e.g. "$1") to produce the canonical form. URLs matching no rule compare as-is.
+function canonicalizeUrl(url: string, consolidateRules: ConsolidateRule[]) {
+    for (const rule of consolidateRules) {
+        if (rule.matchStr === "") {
+            continue;
+        }
+        const re = new RegExp(rule.matchStr, "i");
+        if (re.test(url)) {
+            return url.replace(re, rule.replaceStr);
+        }
+    }
+    return url;
+}
+
+// load whether consolidation is enabled and its rules
+async function loadConsolidateSettings() {
+    const data = (await chrome.storage.sync.get({
+        consolidateEnabled: false,
+        consolidateRules: [],
+    })) as Data;
+    return {
+        consolidateEnabled: data.consolidateEnabled,
+        consolidateRules: data.consolidateRules,
+    };
+}
+
+// if the tab's URL duplicates an already-open tab (per the consolidation rules),
+// close this tab and focus the existing one instead
+async function consolidateTab(tabId: number, url: string) {
+    const { consolidateEnabled, consolidateRules } =
+        await loadConsolidateSettings();
+    if (!consolidateEnabled || url === "") {
+        return;
+    }
+
+    const canonical = canonicalizeUrl(url, consolidateRules);
+    const tabs = await chrome.tabs.query({});
+    const duplicate = tabs.find(
+        (t) =>
+            t.id !== undefined &&
+            t.id !== tabId &&
+            t.url !== undefined &&
+            canonicalizeUrl(t.url, consolidateRules) === canonical,
+    );
+    if (duplicate === undefined || duplicate.id === undefined) {
+        return;
+    }
+
+    await chrome.tabs.update(duplicate.id, { active: true });
+    await chrome.windows.update(duplicate.windowId, { focused: true });
+    await chrome.tabs.remove(tabId);
+}
+
+// close a newly-created tab as soon as its target URL is known, if it duplicates an
+// already-open tab (before it starts loading, when possible)
+chrome.tabs.onCreated.addListener((tab) => {
+    const url = tab.pendingUrl ?? tab.url;
+    if (tab.id !== undefined && url !== undefined) {
+        consolidateTab(tab.id, url);
+    }
+});
+
+// also catch tabs that are consolidated after the fact, e.g. a tab navigating (via
+// address bar, link, etc.) to a URL that duplicates another already-open tab
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+    if (changeInfo.url !== undefined) {
+        consolidateTab(tabId, changeInfo.url);
     }
 });
 

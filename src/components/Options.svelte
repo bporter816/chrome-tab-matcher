@@ -1,6 +1,6 @@
 <script lang="ts">
 import Sortable from "sortablejs";
-import type { Data, Rule } from "../types";
+import type { Data } from "../types";
 import { RuleType } from "../types";
 import Button from "./Button.svelte";
 import Dropdown from "./Dropdown.svelte";
@@ -16,27 +16,33 @@ let { data: initialData, tabGroups }: Props = $props();
 // svelte-ignore state_referenced_locally -- intentionally seeding local state once from the initial prop
 let data = $state(initialData);
 
-function sortableList(node: HTMLElement) {
-    const sortable = Sortable.create(node, {
-        animation: 150,
-        filter: ".nodrag",
-        forceFallback: true,
-        preventOnFilter: false,
-        onUpdate: (evt: Sortable.SortableEvent) => {
-            if (evt.oldIndex === undefined || evt.newIndex === undefined) {
-                return;
-            }
-            const el: Rule = data.rules.splice(evt.oldIndex, 1)[0];
-            data.rules.splice(evt.newIndex, 0, el);
-        },
-    });
+function makeSortableList<T>(getItems: () => T[]) {
+    return function sortableList(node: HTMLElement) {
+        const sortable = Sortable.create(node, {
+            animation: 150,
+            filter: ".nodrag",
+            forceFallback: true,
+            preventOnFilter: false,
+            onUpdate: (evt: Sortable.SortableEvent) => {
+                if (evt.oldIndex === undefined || evt.newIndex === undefined) {
+                    return;
+                }
+                const items = getItems();
+                const el: T = items.splice(evt.oldIndex, 1)[0];
+                items.splice(evt.newIndex, 0, el);
+            },
+        });
 
-    return {
-        destroy() {
-            sortable.destroy();
-        },
+        return {
+            destroy() {
+                sortable.destroy();
+            },
+        };
     };
 }
+
+const sortableRuleList = makeSortableList(() => data.rules);
+const sortableConsolidateRuleList = makeSortableList(() => data.consolidateRules);
 
 chrome.runtime.onMessage.addListener((request, _send, _sendResponse) => {
     if (request.type === "updateGroups") {
@@ -50,6 +56,14 @@ function addRule() {
 
 function deleteRule(index: number) {
     data.rules.splice(index, 1);
+}
+
+function addConsolidateRule() {
+    data.consolidateRules.push({ id: crypto.randomUUID(), matchStr: "", replaceStr: "" });
+}
+
+function deleteConsolidateRule(index: number) {
+    data.consolidateRules.splice(index, 1);
 }
 
 function save(d: Data) {
@@ -105,7 +119,7 @@ $effect(() => {
         </div>
     </div>
     <div class="shadow-md overflow-hidden sm:rounded-md">
-        <ul use:sortableList class="divide-y divide-gray-300 dark:divide-neutral-800">
+        <ul use:sortableRuleList class="divide-y divide-gray-300 dark:divide-neutral-800">
         {#each data.rules as rule, index (rule.id)}
             <li class="py-4 px-4 flex items-center bg-pane dark:bg-pane-dark">
                 <div class="flex-none pr-1 text-sm text-black dark:text-white">{index + 1}: if</div>
@@ -120,6 +134,51 @@ $effect(() => {
                     <IconInput placeholder="tab group" bind:value={rule.tabGroup} {tabGroups} />
                 </div>
                 <button type="button" onclick={() => deleteRule(index)} class="flex-none pl-3 text-sm font-medium text-accent dark:text-accent-pale hover:text-accent-hover dark:hover:text-accent-palehover">Delete</button>
+            </li>
+        {/each}
+        </ul>
+    </div>
+
+    <h1 class="text-2xl text-black dark:text-white mt-6">Consolidate duplicate tabs</h1>
+    <p class="text-sm text-black dark:text-white py-1">
+        When enabled, opening or navigating to a URL that's already open in another tab will close the new tab and
+        switch to the existing one instead.
+    </p>
+    <p class="text-sm text-black dark:text-white py-1">
+        By default, two tabs are considered duplicates only if their URLs match exactly. You can add patterns below
+        to treat similar URLs as duplicates too &mdash; for example, a GitHub pull request and its "/files" or
+        "/commits" tab. Each pattern is a regex matched against the URL; if it matches, the URL is rewritten using the
+        replacement (which may reference capture groups, e.g. "$1") before being compared. Patterns are evaluated
+        top-to-bottom and the first match is used.
+    </p>
+    <div class="flex justify-center py-2">
+        <label class="flex items-center gap-2 text-sm text-black dark:text-white">
+            <input type="checkbox" bind:checked={data.consolidateEnabled} class="nodrag form-checkbox rounded-sm text-accent dark:text-accent-pale" />
+            Enable tab consolidation
+        </label>
+    </div>
+    <div class="flex justify-center py-2">
+        <div class="px-2">
+            <Button onclick={addConsolidateRule} label="Add pattern">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </Button>
+        </div>
+    </div>
+    <div class="shadow-md overflow-hidden sm:rounded-md">
+        <ul use:sortableConsolidateRuleList class="divide-y divide-gray-300 dark:divide-neutral-800">
+        {#each data.consolidateRules as rule, index (rule.id)}
+            <li class="py-4 px-4 flex items-center bg-pane dark:bg-pane-dark">
+                <div class="flex-none pr-1 text-sm text-black dark:text-white">{index + 1}: if URL matches</div>
+                <div class="grow px-1">
+                    <Input placeholder="regex" bind:value={rule.matchStr} />
+                </div>
+                <div class="flex-none px-1 text-sm text-black dark:text-white">replace with</div>
+                <div class="grow px-1">
+                    <Input placeholder="replacement" bind:value={rule.replaceStr} />
+                </div>
+                <button type="button" onclick={() => deleteConsolidateRule(index)} class="flex-none pl-3 text-sm font-medium text-accent dark:text-accent-pale hover:text-accent-hover dark:hover:text-accent-palehover">Delete</button>
             </li>
         {/each}
         </ul>

@@ -4,7 +4,11 @@ import "./index.css";
 import { mount } from "svelte";
 
 async function hydrate() {
-    const data = (await chrome.storage.sync.get({ rules: [] })) as Data;
+    const data = (await chrome.storage.sync.get({
+        rules: [],
+        consolidateEnabled: false,
+        consolidateRules: [],
+    })) as Data;
     const tabGroups = await chrome.tabGroups.query({});
 
     const target = document.getElementById("app");
