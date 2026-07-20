@@ -133,7 +133,7 @@ $effect(() => {
                 <div class="grow px-1">
                     <IconInput placeholder="tab group" bind:value={rule.tabGroup} {tabGroups} />
                 </div>
-                <button type="button" onclick={() => deleteRule(index)} class="flex-none pl-3 text-sm font-medium text-accent dark:text-accent-pale hover:text-accent-hover dark:hover:text-accent-palehover">Delete</button>
+                <button type="button" onclick={() => deleteRule(index)} class="flex-none pl-3 text-sm font-medium text-accent dark:text-accent-pale hover:text-accent-hover dark:hover:text-accent-palehover cursor-pointer">Delete</button>
             </li>
         {/each}
         </ul>
@@ -152,8 +152,8 @@ $effect(() => {
         top-to-bottom and the first match is used.
     </p>
     <div class="flex justify-center py-2">
-        <label class="flex items-center gap-2 text-sm text-black dark:text-white">
-            <input type="checkbox" bind:checked={data.consolidateEnabled} class="nodrag form-checkbox rounded-sm text-accent dark:text-accent-pale" />
+        <label class="flex items-center gap-2 text-sm text-black dark:text-white cursor-pointer">
+            <input type="checkbox" bind:checked={data.consolidateEnabled} class="nodrag form-checkbox rounded-sm text-accent dark:text-accent-pale cursor-pointer" />
             Enable tab consolidation
         </label>
     </div>
@@ -178,7 +178,7 @@ $effect(() => {
                 <div class="grow px-1">
                     <Input placeholder="replacement" bind:value={rule.replaceStr} />
                 </div>
-                <button type="button" onclick={() => deleteConsolidateRule(index)} class="flex-none pl-3 text-sm font-medium text-accent dark:text-accent-pale hover:text-accent-hover dark:hover:text-accent-palehover">Delete</button>
+                <button type="button" onclick={() => deleteConsolidateRule(index)} class="flex-none pl-3 text-sm font-medium text-accent dark:text-accent-pale hover:text-accent-hover dark:hover:text-accent-palehover cursor-pointer">Delete</button>
             </li>
         {/each}
         </ul>
